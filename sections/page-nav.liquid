@@ -1,0 +1,282 @@
+<link rel="stylesheet" href="{{ 'component-rte.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'section-main-page.css' | asset_url }}" media="print" onload="this.media='all'">
+
+<noscript>{{ 'component-rte.css' | asset_url | stylesheet_tag }}</noscript>
+<noscript>{{ 'section-main-page.css' | asset_url | stylesheet_tag }}</noscript>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width page-width--narrow section-{{ section.id }}-padding">
+    <nav class="header__inline-menu">
+      <ul class="list-menu list-menu--inline" role="list">
+        {%- for link in section.settings.menu.links -%}
+          <li>
+            {%- if link.links != blank -%}
+              <header-menu>
+                <details id="Details-HeaderMenu-{{ forloop.index }}" class="mega-menu">
+                  <summary class="header__menu-item list-menu__item link focus-inset">
+                    <span
+                      style="color: white;"
+                      {%- if link.child_active %}
+                        class="header__active-menu-item"
+                      {% endif %}
+                    >
+                      {{- link.title | escape -}}
+                    </span>
+                    {% render 'icon-caret' %}
+                  </summary>
+                </details>
+              </header-menu>
+            {%- else -%}
+              {% comment %} Included ID for nav links for the listeners, as well as Section-Id and URL as data attributes to make things easier in Js {% endcomment %}
+
+              <a
+                href=""
+                id="target_link"
+                data-section="{{ section.id }}"
+                data-url="{{ link.url }}"
+                class="header__menu-item list-menu__item link link--text focus-inset button_custom"
+                {% if link.current %}
+                  aria-current="page"
+                {% endif %}
+              >
+                <span
+                  {%- if link.current %}
+                    class="header__active-menu-item"
+                  {% endif %}
+                >
+                  {{- link.title | escape -}}
+                </span>
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    <br>
+    <h2 class="page-title {{ section.settings.heading_size }}">
+      {%- if page.title != blank -%}
+        {{ page.title | escape }}
+      {%- else -%}
+        {{ 'sections.page.title' | t }}
+      {%- endif -%}
+    </h2>
+    <div class="rte">
+      {%- if page.content != blank -%}
+        {{ page.content }}
+      {%- else -%}
+        <div class="page-placeholder-wrapper placeholder">
+          {{ 'page' | placeholder_svg_tag: 'page-placeholder' }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.page-nav.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "t:sections.header.settings.menu.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.all.colors.accent_1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.all.colors.accent_2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.all.colors.background_1.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.all.colors.background_2.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.all.colors.inverse.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.all.colors.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.page.presets.name"
+    }
+  ]
+}
+{% endschema %}
+
+{% if template.suffix == 'test-page-nav' %}
+  <style>
+      #MainContent .page-width {
+        max-width: 1100px;
+    }
+
+      .button_custom {
+        color: rgba(0,0,0,1);
+        background-color: rgba(240,240,240,.4);
+        padding: 8px 16px;
+        border: none;
+        cursor: pointer;
+        margin: 0 auto;
+        font-size: 1.5rem;
+        text-decoration: none !important;
+    }
+
+      .button_custom:hover, button:focus {
+        color: rgba(255,255,255,1);
+        background-color: rgba(0,0,0,1);
+        outline: none;
+        margin: 0 auto;
+        font-size: 1.5rem;
+        text-decoration: none  !important;
+    }
+
+      .button_custom:active {
+        color: rgba(255,255,255,1);
+        background-color: rgba(0,0,0,.24);
+        margin: 0 auto;
+        font-size: 1.5rem;
+
+    }
+
+     a#target_link {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+     #MainContent .header__menu-item:hover > .header__active-menu-item {
+      text-decoration: none  !important;
+      color: white;
+      font-size: 1.5rem;
+      margin: 0 auto;
+    }
+
+     #MainContent .header__menu-item:hover span,
+     #MainContent .header__menu-item:active span {
+      text-decoration: none  !important;
+    }
+     #MainContent ul.list-menu.list-menu--inline {
+      width: 100%;
+      justify-content: space-evenly;
+    }
+
+     #MainContent ul.list-menu.list-menu--inline > li {
+      width: 25%;
+      display: flex;
+    }
+
+     #MainContent a#target_link:active {
+      background: darkgrey;
+      max-height: 47px !important;
+    }
+
+     #MainContent span.header__active-menu-item:active {
+      background: dargrey;
+    }
+
+     #MainContent nav.header__inline-menu {
+      max-width: calc(100% - 20px);
+      margin: 0 auto;
+    }
+
+    div#WebPixelsManagerSandboxContainer {
+      display: none;
+    }
+
+    @media only screen and (max-width:989px){
+     #MainContent ul.list-menu.list-menu--inline > li {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+     #MainContent ul.list-menu.list-menu--inline{
+      display: flex;
+      flex-direction: column;
+    }
+
+     #MainContent .header__inline-menu {
+      display: flex;
+      justify-content: center;
+     }
+     }
+  </style>
+{% endif %}
